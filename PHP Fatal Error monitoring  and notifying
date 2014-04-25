@@ -1,0 +1,35 @@
+#!/bin/sh
+
+cd /tmp/
+
+# Find host name of AWS Machine 
+wget -q -O instance-data "http://169.254.169.254/latest/user-data"
+index=`curl -s "http://169.254.169.254/latest/meta-data/ami-launch-index"`
+startindex=`cut -d~ -f 2 instance-data`
+hname=`cut -d~ -f 1 instance-data`
+index=`expr $startindex + $index`
+hname=$hname$index
+echo $hname
+
+
+
+
+START=$(date -d '-15 min' '+%d-%b-%Y %H:%M')
+echo $START
+END=$(date '+%d-%b-%Y %H:%M')
+echo $END
+errSize=`du -sh /mnt/cf_logs/php_error.log`
+echo $errSize
+
+sed -n "/$START/,/$END/p" /mnt/cf_logs/php_error.log > /tmp/err.txt
+grep "PHP Catchable fatal error\|PHP Fatal error" /tmp/err.txt > /tmp/err-fatal.txt
+
+errfile=/tmp/err-fatal.txt
+if [ -s "$errfile" ]
+then
+	echo "$errfile has some data."
+	mail -s "Errors on Servers from $START to $END $hname and size $errSize" libindas@gmail.com < /tmp/err-fatal.txt
+
+else
+	echo "$errfile is empty."
+fi
