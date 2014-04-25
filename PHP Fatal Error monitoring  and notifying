@@ -18,7 +18,7 @@ START=$(date -d '-15 min' '+%d-%b-%Y %H:%M')
 echo $START
 END=$(date '+%d-%b-%Y %H:%M')
 echo $END
-errSize=`du -sh /mnt/cf_logs/php_error.log`
+errSize=`du -sh /mnt/cf_logs/php_error.log`  ## PHP Log file 
 echo $errSize
 
 sed -n "/$START/,/$END/p" /mnt/cf_logs/php_error.log > /tmp/err.txt
