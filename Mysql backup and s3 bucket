@@ -1,0 +1,33 @@
+#!/bin/sh
+
+/etc/init.d/crond stop
+
+if [ -d /mnt/share/dbbackups ]; then
+   echo  'exist'
+else
+   mkdir -p /mnt/share/dbbackups
+fi
+
+date=`date '+%Y-%m-%d-%H%M%S'`
+
+mysqldump -u root -p'password' --all-databases | gzip > /mnt/share/dbbackups/backup-$date.sql.gz
+if [ $? -ne 0 ]
+then 
+echo "back up command got some error check back for cldb" | mail -s "back up command got some error check back for cldb" libindas@gmail.com
+fi
+
+#Push to S3
+s3cmd put /mnt/share/dbbackups/backup-$date.sql.gz s3://cfimageadmin/mysql-backup/backup-$date.sql.gz
+echo "Pushed Logs to s3"
+
+#Removing the archive file
+
+
+rm -f /mnt/share/dbbackups/backup-$date.sql.gz
+echo "Removed the backup-$date.sql.gz file"
+
+echo "backup-$date.sql.gz is copied to s3 bucket cfimageadmin" | mail -s "Backup in S3 backup-$date.sql.gz" libindas@gmail.com
+
+/etc/init.d/crond start
+
+
