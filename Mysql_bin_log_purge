@@ -1,0 +1,9 @@
+#!/bin/bash
+CURRENT_LOGFILE=`mysql -unagios -pna -e "SHOW SLAVE STATUS\G" | awk '$1 == "Master_Log_File:" {print $2}'`
+echo $CURRENT_LOGFILE
+echo "Purging Master Logs before $CURRENT_LOGFILE" > /PURGE_MASTER.txt
+mysql -uroot -ppassword -h 10.142.1.7 -e "PURGE MASTER LOGS TO '$CURRENT_LOGFILE'"
+echo "Purging Slave Logs before Current Log" >> /PURGE_MASTER.txt 
+mysql -une -pga -e "purge binary logs before now();"
+mail -s "PURGE MASTER LOGS TO $CURRENT_LOGFILE" techops@mail.com < /PURGE_MASTER.txt
+exit $?
