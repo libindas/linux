@@ -1,0 +1,22 @@
+#!/bin/bash
+
+wget -q -O instance-data "http://169.254.169.254/latest/user-data"
+index=`curl -s "http://169.254.169.254/latest/meta-data/ami-launch-index"`
+startindex=`cut -d~ -f 2 instance-data`
+hname=`cut -d~ -f 1 instance-data`
+index=`expr $startindex + $index`
+hname=$hname$index
+echo $hname
+
+
+TodaysDate=`date -d "today" +%Y_%m_%d`
+YsetDate=`date --date=yesterday +%Y_%m_%d`
+DATE=`date +%Y%m%d_%H%M`
+
+        cp -Rfv /var/log/httpd/access_log /var/log/httpd/$hname-access_log-$YsetDate
+        echo "" > /var/log/httpd/access_log
+	tar -czf /var/log/httpd/$hname-access_log-$YsetDate.tgz /var/log/httpd/$hname-access_log-$YsetDate
+	s3cmd put /var/log/httpd/$hname-access_log-$YsetDate.tgz s3://imageadmin/techops/$hname-access_log-$YsetDate.tgz
+	rm -rf /var/log/httpd/$hname-access_log-$YsetDate
+ 	rm -rf /var/log/httpd/$hname-access_log-$YsetDate.tgz
+ 	
