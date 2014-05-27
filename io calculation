@@ -1,0 +1,13 @@
+#!/bin/bash
+while [ true ]
+do
+TIME=`date +"%F %T"`
+DATE=`date +%F`
+for DEVICE in  sda2
+do
+LOGFILE=/opt/scripts/iostats_"$DEVICE"_"$DATE".log
+touch /opt/scripts/iostats_"$DEVICE"_"$DATE".log
+iostat -x $DEVICE | grep  $DEVICE >> $LOGFILE
+done
+sleep 15
+done
