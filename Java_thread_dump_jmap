@@ -1,0 +1,5 @@
+#!/bin/bash
+d2=`date "+%F-%T"`
+pid=$(pgrep -u user java)
+jstack $pid 1> thread_log_$d2.log 2> exception_log_$d2.log
+jmap -histo:live $pid 1> jmap_log_$d2.log 2> jmap_exception_log_$d2.log
